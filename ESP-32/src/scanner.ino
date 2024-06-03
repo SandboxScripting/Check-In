@@ -36,39 +36,39 @@ Adafruit_PN532 nfc(PN532_SS);
 
 void setup()
 {
-    delay(500);
-    Serial.begin(115200);
+  delay(500);
+  Serial.begin(115200);
 
-    pinMode(BUT1, INPUT);
-    pinMode(BUT2, INPUT);
-    pinMode(BUT3, INPUT);
-    pinMode(BUT4, INPUT);
+  pinMode(BUT1, INPUT);
+  pinMode(BUT2, INPUT);
+  pinMode(BUT3, INPUT);
+  pinMode(BUT4, INPUT);
 
-    nfc.begin();
+  nfc.begin();
 
-    tft.init(240, 320);
-    tft.setRotation(3);
-    homeScreen();
+  tft.init(240, 320);
+  tft.setRotation(3);
+  homeScreen();
 
-    nfc.begin();
+  nfc.begin();
 
-    uint32_t versiondata = nfc.getFirmwareVersion();
-    if (!versiondata)
-    {
-        Serial.print("Didn't find PN53x board");
-        while (1)
-            ; // halt
-    }
-    // Got ok data, print it out!
-    Serial.print("Found chip PN5");
-    Serial.println((versiondata >> 24) & 0xFF, HEX);
-    Serial.print("Firmware ver. ");
-    Serial.print((versiondata >> 16) & 0xFF, DEC);
-    Serial.print('.');
-    Serial.println((versiondata >> 8) & 0xFF, DEC);
+  uint32_t versiondata = nfc.getFirmwareVersion();
+  if (!versiondata)
+  {
+    Serial.print("Didn't find PN53x board");
+    while (1)
+      ; // halt
+  }
+  // Got ok data, print it out!
+  Serial.print("Found chip PN5");
+  Serial.println((versiondata >> 24) & 0xFF, HEX);
+  Serial.print("Firmware ver. ");
+  Serial.print((versiondata >> 16) & 0xFF, DEC);
+  Serial.print('.');
+  Serial.println((versiondata >> 8) & 0xFF, DEC);
 
-    // configure board to read RFID tags
-    nfc.SAMConfig();
+  // configure board to read RFID tags
+  nfc.SAMConfig();
 }
 
 ////////////////////////////////////////////////////////
@@ -77,47 +77,55 @@ void setup()
 
 void homeScreen()
 {
-    tft.setFont(&FreeSerif24pt7b);
-    tft.fillScreen(ST77XX_BLACK);
-    tft.setCursor(0, 80);
-    tft.setTextColor(ST77XX_YELLOW);
-    tft.setTextSize(2);
-    tft.println("Start");
-    tft.println("Here!");
+  tft.setFont(&FreeSerif24pt7b);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setCursor(0, 80);
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.println("Start");
+  tft.println("Here!");
 }
 
 void loop()
 {
-    struct tm timeinfo;
-    time_t nowSecs;
+  nfc.begin();
+  struct tm timeinfo;
+  time_t nowSecs;
 
-    uint8_t success;
-    uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0, 0}; // Buffer to store the returned UID
-    uint8_t uidLength;
-    uint64_t idnum = 0;
-    // String uidStr;
-    char uidStr[30] = "";
+  uint8_t success;
+  uint8_t uid[] = {0, 0, 0, 0, 0, 0, 0, 0}; // Buffer to store the returned UID
+  uint8_t uidLength;
+  uint64_t idnum = 0;
+  // String uidStr;
+  char uidStr[30] = "";
 
-    // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
-    success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 100);
+  // Length of the UID (4 or 7 bytes depending on ISO14443A card type)
+  success = nfc.readPassiveTargetID(PN532_MIFARE_ISO14443A, uid, &uidLength, 100);
 
-    if (success)
+  if (success)
+  {
+    tft.fillScreen(ST77XX_BLACK);
+    tft.setCursor(0, 80);
+    tft.setTextColor(ST77XX_YELLOW);
+    tft.setTextSize(2);
+    tft.println("Found");
+    tft.println("Card!");
+    delat(1000);
+    homeScreen();
+    delay(100);
+
+    tft.setFont(&FreeSerif24pt7b);
+
+    uint32_t szPos;
+
+    for (szPos = 0; szPos < uidLength; szPos++)
     {
-        tft.fillScreen(ST77XX_BLACK);
-        tft.setCursor(0, 30);
-
-        tft.setFont(&FreeSerif24pt7b);
-
-        uint32_t szPos;
-
-        for (szPos = 0; szPos < uidLength; szPos++)
-        {
-            sprintf(uidStr, "%s%02X", uidStr, uid[szPos] & 0xff);
-        }
-        nowSecs = time(nullptr);
-        Serial.println(String(uidStr));
-
-        tft.setTextSize(1);
+      sprintf(uidStr, "%s%02X", uidStr, uid[szPos] & 0xff);
     }
-    delay(10);
+    nowSecs = time(nullptr);
+    Serial.println(String(uidStr));
+
+    tft.setTextSize(1);
+  }
+  delay(10);
 }
