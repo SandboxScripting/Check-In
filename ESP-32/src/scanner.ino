@@ -79,14 +79,11 @@ void homeScreen()
 {
     tft.setFont(&FreeSerif24pt7b);
     tft.fillScreen(ST77XX_BLACK);
-    tft.setCursor(20, 40);
+    tft.setCursor(0, 80);
     tft.setTextColor(ST77XX_YELLOW);
-    tft.setTextSize(1);
-    tft.println("Scan Here!");
-    tft.setCursor(20, 80);
-    tft.println("---->");
-    tft.fillRect(20, 45, tft.width() - 95, 5, ST77XX_BLUE);
-    tft.fillRect(tft.width() - 52, 45, 20, 5, ST77XX_BLUE);
+    tft.setTextSize(2);
+    tft.println("Start");
+    tft.println("Here!");
 }
 
 void loop()
